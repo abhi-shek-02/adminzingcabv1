@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Users, 
-  DollarSign, 
+  IndianRupee, 
   MessageSquare, 
   TrendingUp, 
   Car,
@@ -130,7 +130,7 @@ const Dashboard = () => {
         <StatCard
           title="This Month Revenue"
           value={`₹${stats.thisMonthRevenue.toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           gradient="from-purple-500 to-purple-600"
         />
         <StatCard

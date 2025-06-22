@@ -12,6 +12,7 @@ import {
   Plus,
   Users
 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,7 +49,7 @@ const Layout = () => {
           </div>
           <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
-              <Car className="h-8 w-8 text-blue-600" />
+              <img src={logo} alt="ZingCab Admin" className="h-10 w-10 object-contain" />
               <span className="ml-2 text-xl font-bold text-gray-900">ZingCab Admin</span>
             </div>
             <nav className="mt-5 flex-1 space-y-1 px-2">
@@ -80,7 +81,7 @@ const Layout = () => {
         <div className="flex min-h-0 flex-1 flex-col bg-white shadow-lg">
           <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
-              <Car className="h-8 w-8 text-blue-600" />
+              <img src={logo} alt="ZingCab Admin" className="h-10 w-10 object-contain" />
               <span className="ml-2 text-xl font-bold text-gray-900">ZingCab Admin</span>
             </div>
             <nav className="mt-8 flex-1 space-y-1 px-2">
@@ -118,7 +119,7 @@ const Layout = () => {
               <Menu className="h-6 w-6" />
             </button>
             <div className="flex items-center">
-              <Car className="h-8 w-8 text-blue-600" />
+              <img src={logo} alt="ZingCab Admin" className="h-10 w-10 object-contain" />
               <span className="ml-2 text-xl font-bold text-gray-900">ZingCab Admin</span>
             </div>
             <div className="w-10" />

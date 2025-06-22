@@ -14,7 +14,7 @@ import {
   Line,
   Legend
 } from 'recharts';
-import { Calendar, TrendingUp, Car, DollarSign } from 'lucide-react';
+import { Calendar, TrendingUp, Car, IndianRupee } from 'lucide-react';
 import { apiService } from '../services/api';
 import { Booking } from '../types/api';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWithinInterval } from 'date-fns';
@@ -184,7 +184,7 @@ const Analytics = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <DollarSign className="h-6 w-6 text-green-600" />
+                <IndianRupee className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>

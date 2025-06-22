@@ -55,10 +55,10 @@ const CreateBooking = () => {
     try {
       const booking: CreateBookingRequest = {
         ...fareRequest,
-        user_name: bookingData.user_name!,
-        user_email: bookingData.user_email!,
+        user_name: bookingData.user_name || '',
+        user_email: bookingData.user_email || '',
         estimated_fare: fareEstimate.selected_car.estimated_fare,
-        advance_amount_paid: bookingData.advance_amount_paid!,
+        advance_amount_paid: bookingData.advance_amount_paid || 0,
       };
 
       const response = await apiService.createBooking(booking);
@@ -273,7 +273,7 @@ const CreateBooking = () => {
               value={bookingData.user_name}
               onChange={(e) => handleBookingDataChange('user_name', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
+              placeholder="Optional"
             />
           </div>
 
@@ -284,7 +284,7 @@ const CreateBooking = () => {
               value={bookingData.user_email}
               onChange={(e) => handleBookingDataChange('user_email', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
+              placeholder="Optional"
             />
           </div>
 
@@ -293,11 +293,11 @@ const CreateBooking = () => {
             <input
               type="number"
               value={bookingData.advance_amount_paid}
-              onChange={(e) => handleBookingDataChange('advance_amount_paid', parseFloat(e.target.value))}
+              onChange={(e) => handleBookingDataChange('advance_amount_paid', parseFloat(e.target.value) || 0)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               min="0"
               step="0.01"
-              required
+              placeholder="0"
             />
           </div>
         </div>

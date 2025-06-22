@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Settings as SettingsIcon, 
   Car, 
-  DollarSign, 
+  IndianRupee, 
   MapPin, 
   Clock,
   Save,
@@ -81,7 +81,7 @@ const Settings = () => {
   };
 
   const tabs = [
-    { id: 'fare', name: 'Fare Rates', icon: DollarSign },
+    { id: 'fare', name: 'Fare Rates', icon: IndianRupee },
     { id: 'cars', name: 'Car Types', icon: Car },
     { id: 'locations', name: 'Locations', icon: MapPin },
     { id: 'rental', name: 'Rental Types', icon: Clock },

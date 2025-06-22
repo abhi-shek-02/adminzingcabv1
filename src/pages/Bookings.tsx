@@ -175,16 +175,33 @@ const Bookings = () => {
   const getServiceTypeBadge = (type: string) => {
     const colors = {
       oneway: 'bg-blue-100 text-blue-800',
-      roundtrip: 'bg-purple-100 text-purple-800',
-      airport: 'bg-green-100 text-green-800',
+      roundtrip: 'bg-green-100 text-green-800',
+      airport: 'bg-purple-100 text-purple-800',
       rental: 'bg-orange-100 text-orange-800',
     };
-    
     return (
-      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${colors[type as keyof typeof colors] || colors.oneway}`}>
-        {type}
+      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors[type as keyof typeof colors] || colors.oneway}`}>
+        {type.replace('_', ' ')}
       </span>
     );
+  };
+
+  const formatTime = (timeStr: string) => {
+    try {
+      // If timeStr is already in 12-hour format with AM/PM, return as is
+      if (timeStr.includes('AM') || timeStr.includes('PM')) {
+        return timeStr;
+      }
+      
+      // Convert 24-hour format to 12-hour format
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (e) {
+      return timeStr; // Return original if parsing fails
+    }
   };
 
   if (loading) {
@@ -360,7 +377,7 @@ const Bookings = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2" />
-                  <span>{format(new Date(booking.journey_date), 'MMM d, yyyy')} at {booking.pick_up_time}</span>
+                  <span>{format(new Date(booking.journey_date), 'MMM d, yyyy')} at {formatTime(booking.pick_up_time)}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Car className="h-4 w-4 mr-2" />

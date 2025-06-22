@@ -12,12 +12,12 @@ import {
   Calendar, 
   Car, 
   Clock,
-  DollarSign,
   FileText,
   Truck,
   Copy,
   CheckCircle,
-  Download
+  Download,
+  IndianRupee
 } from 'lucide-react';
 import { apiService } from '../services/api';
 import { Booking } from '../types/api';
@@ -34,6 +34,7 @@ const BookingDetails = () => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<any>({});
   const [copied, setCopied] = useState(false);
+  const [driverCopied, setDriverCopied] = useState(false);
 
   useEffect(() => {
     if (bookingId) {
@@ -95,15 +96,29 @@ const BookingDetails = () => {
     return colors[status as keyof typeof colors] || colors.pending;
   }, []);
 
+  const formatTime = useCallback((timeStr: string) => {
+    try {
+      // If timeStr is already in 12-hour format with AM/PM, return as is
+      if (timeStr.includes('AM') || timeStr.includes('PM')) {
+        return timeStr;
+      }
+      
+      // Convert 24-hour format to 12-hour format
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (e) {
+      return timeStr; // Return original if parsing fails
+    }
+  }, []);
+
   const generateBookingMessage = useCallback(() => {
     if (!booking) return '';
 
     const formatDate = (dateStr: string) => {
       return format(new Date(dateStr), 'dd/MM/yyyy');
-    };
-
-    const formatTime = (timeStr: string) => {
-      return timeStr.split(' ')[0]; // Remove timezone part
     };
 
     const message = `🚗 ZingCab Booking Confirmation
@@ -119,10 +134,11 @@ Date: ${formatDate(booking.journey_date)}
 Time: ${formatTime(booking.pick_up_time)}
 Car Type: ${booking.car_type.toUpperCase()}
 Service: ${booking.service_type.replace('_', ' ').toUpperCase()}
+KM Limit: ${booking.km_limit} km
 
 Estimated Fare: ₹${booking.estimated_fare.toLocaleString()}
 Advance Paid: ₹${booking.advance_amount_paid.toLocaleString()}
-${booking.discount_amount ? `Discount: ₹${booking.discount_amount.toLocaleString()}` : ''}
+${booking.discount_amount && booking.discount_amount > 0 ? `Discount: ₹${booking.discount_amount.toLocaleString()}` : ''}
 
 🚘 Vehicle Details:
    Registration Number: ${booking.vehicle_number || 'To be assigned'}
@@ -134,7 +150,34 @@ We strive to provide you with the best possible service and a smooth, hassle-fre
 Visit us at: zingcab.in`;
 
     return message;
-  }, [booking]);
+  }, [booking, formatTime]);
+
+  const generateDriverMessage = useCallback(() => {
+    if (!booking) return '';
+
+    const formatDate = (dateStr: string) => {
+      return format(new Date(dateStr), 'dd/MM/yyyy');
+    };
+
+    const message = `🚗 ZingCab - New Trip Available
+
+📋 Booking ID: ${booking.booking_id}
+
+📍 Trip Details:
+   Pickup: ${booking.pick_up_location}
+   Drop: ${booking.drop_location || 'N/A'}
+   Date: ${formatDate(booking.journey_date)}
+   Time: ${formatTime(booking.pick_up_time)}
+   Car Type: ${booking.car_type.toUpperCase()}
+   Service: ${booking.service_type.replace('_', ' ').toUpperCase()}
+   KM Limit: ${booking.km_limit} km
+
+📞 To get this booking, call: 9903042200
+
+Please confirm your availability and vehicle details.`;
+
+    return message;
+  }, [booking, formatTime]);
 
   const copyToClipboard = useCallback(async () => {
     const message = generateBookingMessage();
@@ -148,6 +191,19 @@ Visit us at: zingcab.in`;
       toast.error('Failed to copy to clipboard');
     }
   }, [generateBookingMessage]);
+
+  const copyDriverMessage = useCallback(async () => {
+    const message = generateDriverMessage();
+    try {
+      await navigator.clipboard.writeText(message);
+      setDriverCopied(true);
+      toast.success('Driver message copied to clipboard!');
+      setTimeout(() => setDriverCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      toast.error('Failed to copy to clipboard');
+    }
+  }, [generateDriverMessage]);
 
   const generateInvoiceHTML = useCallback(() => {
     if (!booking) return '';
@@ -469,7 +525,7 @@ Visit us at: zingcab.in`;
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div className="flex items-center space-x-4">
           <Link
             to="/bookings"
@@ -478,12 +534,12 @@ Visit us at: zingcab.in`;
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{booking.booking_id}</h1>
-            <div className="flex items-center space-x-2 mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{booking.booking_id}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mt-1 space-y-1 sm:space-y-0">
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.ride_status)}`}>
                 {booking.ride_status.replace('_', ' ')}
               </span>
-              <span className="text-gray-400">•</span>
+              <span className="hidden sm:inline text-gray-400">•</span>
               <span className="text-sm text-gray-600">
                 Created {format(new Date(booking.created_at), 'MMM d, yyyy HH:mm')}
               </span>
@@ -492,11 +548,11 @@ Visit us at: zingcab.in`;
         </div>
         
         {/* Action Buttons */}
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
           {/* Download Invoice Button */}
           <button
             onClick={downloadInvoice}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             title="Download invoice PDF"
           >
             <Download className="h-4 w-4 mr-2" />
@@ -506,7 +562,7 @@ Visit us at: zingcab.in`;
           {/* Copy Booking Message Button */}
           <button
             onClick={copyToClipboard}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
+            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
             title="Copy booking message to clipboard"
           >
             {copied ? (
@@ -517,16 +573,35 @@ Visit us at: zingcab.in`;
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-2" />
-                Copy Message
+                Copy Customer Message
+              </>
+            )}
+          </button>
+
+          {/* Copy Driver Message Button */}
+          <button
+            onClick={copyDriverMessage}
+            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            title="Copy driver message to clipboard"
+          >
+            {driverCopied ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Driver Message
               </>
             )}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6">
           {/* Customer Information */}
           <div className="bg-white shadow-sm rounded-lg border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -583,7 +658,7 @@ Visit us at: zingcab.in`;
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-600">Journey Date & Time</div>
                     <div className="text-sm text-gray-900 mt-1">
-                      {format(new Date(booking.journey_date), 'EEEE, MMMM d, yyyy')} at {booking.pick_up_time}
+                      {format(new Date(booking.journey_date), 'EEEE, MMMM d, yyyy')} at {formatTime(booking.pick_up_time)}
                     </div>
                   </div>
                 </div>
@@ -670,24 +745,20 @@ Visit us at: zingcab.in`;
               <h2 className="text-lg font-medium text-gray-900">Pricing</h2>
             </div>
             <div className="px-6 py-4 space-y-1">
-              <div className="py-3 border-b border-gray-200">
-                <div className="flex items-center">
-                  <DollarSign className="h-4 w-4 text-gray-400 mr-3" />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-600">Estimated Fare</div>
-                    <div className="text-lg font-semibold text-gray-900 mt-1">
-                      ₹{booking.estimated_fare.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <EditableField
+                field="estimated_fare"
+                label="Estimated Fare"
+                value={booking.estimated_fare}
+                type="number"
+                icon={IndianRupee}
+              />
 
               <EditableField
                 field="advance_amount_paid"
                 label="Advance Paid"
                 value={booking.advance_amount_paid}
                 type="number"
-                icon={DollarSign}
+                icon={IndianRupee}
               />
 
               <EditableField
@@ -695,7 +766,7 @@ Visit us at: zingcab.in`;
                 label="Amount Paid to Driver"
                 value={booking.amount_paid_to_driver}
                 type="number"
-                icon={DollarSign}
+                icon={IndianRupee}
               />
 
               <EditableField
@@ -703,7 +774,7 @@ Visit us at: zingcab.in`;
                 label="Discount Amount"
                 value={booking.discount_amount}
                 type="number"
-                icon={DollarSign}
+                icon={IndianRupee}
               />
             </div>
           </div>
@@ -720,7 +791,7 @@ Visit us at: zingcab.in`;
                 value={booking.payment_status}
                 type="select"
                 options={paymentStatusOptions}
-                icon={DollarSign}
+                icon={IndianRupee}
               />
 
               <EditableField
@@ -729,7 +800,7 @@ Visit us at: zingcab.in`;
                 value={booking.payment_method}
                 type="select"
                 options={paymentMethodOptions}
-                icon={DollarSign}
+                icon={IndianRupee}
               />
 
               <EditableField
@@ -761,7 +832,7 @@ Visit us at: zingcab.in`;
                 value={booking.refund_status}
                 type="select"
                 options={refundStatusOptions}
-                icon={DollarSign}
+                icon={IndianRupee}
               />
 
               <EditableField
@@ -769,7 +840,7 @@ Visit us at: zingcab.in`;
                 label="Refund Amount"
                 value={booking.refund_amount}
                 type="number"
-                icon={DollarSign}
+                icon={IndianRupee}
               />
             </div>
           </div>
@@ -804,13 +875,29 @@ Visit us at: zingcab.in`;
       {/* Booking Message Preview */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Booking Confirmation Message</h2>
-          <p className="text-sm text-gray-600 mt-1">Click "Copy Message" above to copy this message for sharing with customers</p>
+          <h2 className="text-lg font-medium text-gray-900">Message Templates</h2>
+          <p className="text-sm text-gray-600 mt-1">Click the buttons above to copy these messages for sharing</p>
         </div>
         <div className="px-6 py-4">
-          <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-            <div className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-              {generateBookingMessage()}
+          <div className="space-y-6">
+            {/* Customer Message */}
+            <div>
+              <h3 className="text-md font-medium text-gray-900 mb-3">Customer Confirmation Message</h3>
+              <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <div className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                  {generateBookingMessage()}
+                </div>
+              </div>
+            </div>
+
+            {/* Driver Message */}
+            <div>
+              <h3 className="text-md font-medium text-gray-900 mb-3">Driver WhatsApp Group Message</h3>
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                <div className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                  {generateDriverMessage()}
+                </div>
+              </div>
             </div>
           </div>
         </div>
