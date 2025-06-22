@@ -26,6 +26,7 @@ const Bookings = () => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
   const [carTypeFilter, setCarTypeFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
 
   useEffect(() => {
     fetchBookings();
@@ -33,7 +34,7 @@ const Bookings = () => {
 
   useEffect(() => {
     filterBookings();
-  }, [bookings, searchTerm, statusFilter, serviceTypeFilter, carTypeFilter, dateFilter]);
+  }, [bookings, searchTerm, statusFilter, serviceTypeFilter, carTypeFilter, dateFilter, paymentStatusFilter]);
 
   const fetchBookings = async () => {
     try {
@@ -77,6 +78,11 @@ const Bookings = () => {
       filtered = filtered.filter(booking => booking.car_type === carTypeFilter);
     }
 
+    // Payment status filter
+    if (paymentStatusFilter !== 'all') {
+      filtered = filtered.filter(booking => booking.payment_status === paymentStatusFilter);
+    }
+
     // Date filter
     if (dateFilter !== 'all') {
       const today = new Date();
@@ -117,6 +123,7 @@ const Bookings = () => {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         service_type: serviceTypeFilter !== 'all' ? serviceTypeFilter : undefined,
         car_type: carTypeFilter !== 'all' ? carTypeFilter : undefined,
+        payment_status: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
       });
       
       const url = window.URL.createObjectURL(blob);
@@ -147,6 +154,20 @@ const Bookings = () => {
     return (
       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${colors[status as keyof typeof colors] || colors.pending}`}>
         {status.replace('_', ' ')}
+      </span>
+    );
+  };
+
+  const getPaymentStatusBadge = (status: string) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      paid: 'bg-green-100 text-green-800',
+      failed: 'bg-red-100 text-red-800',
+    };
+    
+    return (
+      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${colors[status as keyof typeof colors] || colors.pending}`}>
+        {status || 'Pending'}
       </span>
     );
   };
@@ -202,7 +223,7 @@ const Bookings = () => {
 
       {/* Filters */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-7">
           {/* Search */}
           <div className="lg:col-span-2">
             <div className="relative">
@@ -264,6 +285,20 @@ const Bookings = () => {
             </select>
           </div>
 
+          {/* Payment Status Filter */}
+          <div>
+            <select
+              value={paymentStatusFilter}
+              onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="all">All Payment Status</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="failed">Failed</option>
+            </select>
+          </div>
+
           {/* Date Filter */}
           <div>
             <select
@@ -297,7 +332,10 @@ const Bookings = () => {
                   <h3 className="text-lg font-semibold text-blue-600">{booking.booking_id}</h3>
                   {getServiceTypeBadge(booking.service_type)}
                 </div>
-                {getStatusBadge(booking.ride_status)}
+                <div className="flex flex-col items-end space-y-1">
+                  {getStatusBadge(booking.ride_status)}
+                  {getPaymentStatusBadge(booking.payment_status || 'pending')}
+                </div>
               </div>
 
               {/* Customer Info */}
@@ -336,6 +374,26 @@ const Bookings = () => {
                 <span className="text-lg font-semibold text-gray-900">
                   ₹{booking.estimated_fare.toLocaleString()}
                 </span>
+              </div>
+
+              {/* Payment Info */}
+              <div className="space-y-1 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Advance Paid:</span>
+                  <span className="font-medium">₹{booking.advance_amount_paid.toLocaleString()}</span>
+                </div>
+                {booking.discount_amount && booking.discount_amount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Discount:</span>
+                    <span className="font-medium text-green-600">-₹{booking.discount_amount.toLocaleString()}</span>
+                  </div>
+                )}
+                {booking.refund_amount && booking.refund_amount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Refund:</span>
+                    <span className="font-medium text-blue-600">₹{booking.refund_amount.toLocaleString()}</span>
+                  </div>
+                )}
               </div>
 
               {/* Driver Info (if assigned) */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calculator, Save } from 'lucide-react';
 import { apiService } from '../services/api';
@@ -29,7 +29,7 @@ const CreateBooking = () => {
     advance_amount_paid: 0,
   });
 
-  const handleFareEstimate = async (e: React.FormEvent) => {
+  const handleFareEstimate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -44,9 +44,9 @@ const CreateBooking = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fareRequest]);
 
-  const handleCreateBooking = async (e: React.FormEvent) => {
+  const handleCreateBooking = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fareEstimate) return;
 
@@ -70,7 +70,15 @@ const CreateBooking = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fareRequest, fareEstimate, bookingData, navigate]);
+
+  const handleFareRequestChange = useCallback((field: keyof FareEstimateRequest, value: any) => {
+    setFareRequest(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleBookingDataChange = useCallback((field: keyof CreateBookingRequest, value: any) => {
+    setBookingData(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   const renderFareEstimateForm = () => (
     <form onSubmit={handleFareEstimate} className="space-y-6">
@@ -80,7 +88,7 @@ const CreateBooking = () => {
           <label className="block text-sm font-medium text-gray-700">Service Type</label>
           <select
             value={fareRequest.service_type}
-            onChange={(e) => setFareRequest({ ...fareRequest, service_type: e.target.value as any })}
+            onChange={(e) => handleFareRequestChange('service_type', e.target.value as any)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           >
@@ -96,7 +104,7 @@ const CreateBooking = () => {
           <label className="block text-sm font-medium text-gray-700">Car Type</label>
           <select
             value={fareRequest.car_type}
-            onChange={(e) => setFareRequest({ ...fareRequest, car_type: e.target.value as any })}
+            onChange={(e) => handleFareRequestChange('car_type', e.target.value as any)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           >
@@ -114,7 +122,7 @@ const CreateBooking = () => {
           <input
             type="tel"
             value={fareRequest.mobile_number}
-            onChange={(e) => setFareRequest({ ...fareRequest, mobile_number: e.target.value })}
+            onChange={(e) => handleFareRequestChange('mobile_number', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
@@ -126,7 +134,7 @@ const CreateBooking = () => {
           <input
             type="number"
             value={fareRequest.km_limit}
-            onChange={(e) => setFareRequest({ ...fareRequest, km_limit: parseInt(e.target.value) })}
+            onChange={(e) => handleFareRequestChange('km_limit', parseInt(e.target.value))}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
@@ -138,7 +146,7 @@ const CreateBooking = () => {
           <input
             type="text"
             value={fareRequest.pick_up_location}
-            onChange={(e) => setFareRequest({ ...fareRequest, pick_up_location: e.target.value })}
+            onChange={(e) => handleFareRequestChange('pick_up_location', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
@@ -151,7 +159,7 @@ const CreateBooking = () => {
             <input
               type="text"
               value={fareRequest.drop_location}
-              onChange={(e) => setFareRequest({ ...fareRequest, drop_location: e.target.value })}
+              onChange={(e) => handleFareRequestChange('drop_location', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required={fareRequest.service_type !== 'rental'}
             />
@@ -164,7 +172,7 @@ const CreateBooking = () => {
           <input
             type="date"
             value={fareRequest.journey_date}
-            onChange={(e) => setFareRequest({ ...fareRequest, journey_date: e.target.value })}
+            onChange={(e) => handleFareRequestChange('journey_date', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
@@ -176,7 +184,7 @@ const CreateBooking = () => {
           <input
             type="time"
             value={fareRequest.pick_up_time}
-            onChange={(e) => setFareRequest({ ...fareRequest, pick_up_time: e.target.value })}
+            onChange={(e) => handleFareRequestChange('pick_up_time', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
@@ -189,7 +197,7 @@ const CreateBooking = () => {
             <input
               type="date"
               value={fareRequest.return_date || ''}
-              onChange={(e) => setFareRequest({ ...fareRequest, return_date: e.target.value })}
+              onChange={(e) => handleFareRequestChange('return_date', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             />
@@ -202,7 +210,7 @@ const CreateBooking = () => {
             <label className="block text-sm font-medium text-gray-700">Rental Type</label>
             <select
               value={fareRequest.rental_booking_type || ''}
-              onChange={(e) => setFareRequest({ ...fareRequest, rental_booking_type: e.target.value })}
+              onChange={(e) => handleFareRequestChange('rental_booking_type', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
@@ -263,7 +271,7 @@ const CreateBooking = () => {
             <input
               type="text"
               value={bookingData.user_name}
-              onChange={(e) => setBookingData({ ...bookingData, user_name: e.target.value })}
+              onChange={(e) => handleBookingDataChange('user_name', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             />
@@ -274,7 +282,7 @@ const CreateBooking = () => {
             <input
               type="email"
               value={bookingData.user_email}
-              onChange={(e) => setBookingData({ ...bookingData, user_email: e.target.value })}
+              onChange={(e) => handleBookingDataChange('user_email', e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             />
@@ -285,7 +293,7 @@ const CreateBooking = () => {
             <input
               type="number"
               value={bookingData.advance_amount_paid}
-              onChange={(e) => setBookingData({ ...bookingData, advance_amount_paid: parseFloat(e.target.value) })}
+              onChange={(e) => handleBookingDataChange('advance_amount_paid', parseFloat(e.target.value))}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               min="0"
               step="0.01"
