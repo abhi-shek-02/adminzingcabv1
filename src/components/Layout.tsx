@@ -9,7 +9,8 @@ import {
   Menu, 
   X,
   Car,
-  Plus
+  Plus,
+  Users
 } from 'lucide-react';
 
 const Layout = () => {
@@ -21,6 +22,7 @@ const Layout = () => {
     { name: 'Bookings', href: '/bookings', icon: Calendar },
     { name: 'Contacts', href: '/contacts', icon: MessageSquare },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Customer Numbers', href: '/customernumbers', icon: Users },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

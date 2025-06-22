@@ -111,3 +111,12 @@ export interface FareEstimateRequest {
   return_date?: string;
   rental_booking_type?: string;
 }
+
+export interface CustomerNumber {
+  id: number;
+  customer_name: string;
+  contact_number: string;
+  platform: string;
+  comment: string;
+  created_at: string;
+}

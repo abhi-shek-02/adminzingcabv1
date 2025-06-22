@@ -9,6 +9,7 @@ import CreateBooking from './pages/CreateBooking';
 import Contacts from './pages/Contacts';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import CustomerNumbers from './pages/CustomerNumbers';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="bookings/:bookingId" element={<BookingDetails />} />
             <Route path="contacts" element={<Contacts />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="customernumbers" element={<CustomerNumbers />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

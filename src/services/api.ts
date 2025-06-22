@@ -83,6 +83,18 @@ class ApiService {
 
     return response.blob();
   }
+
+  // Customer Numbers
+  async getCustomerNumbers(): Promise<{ success: boolean; data: any[] }> {
+    return this.request('/api/customernumber');
+  }
+
+  async createCustomerNumber(data: { customer_name: string; contact_number: string; platform: string; comment: string; }): Promise<{ success: boolean; data: any }> {
+    return this.request('/api/customernumber', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const apiService = new ApiService();
